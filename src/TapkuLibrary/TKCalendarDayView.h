@@ -100,6 +100,12 @@
  */
 - (void) calendarDayTimelineView:(TKCalendarDayView *)calendarDay didReceiveLongPressAtDate:(NSDate*)date;
 
+/** The date and time where the timeline was double-tapped by the user.
+ @param calendarDay The calendar day view.
+ @param date The `NSDate` object of the day timeline corresponding to the coordinates of the double-tap.
+ */
+- (void) calendarDayTimelineView:(TKCalendarDayView *)calendarDay didReceiveDoubleTapAtDate:(NSDate*)date;
+
 @end
 
 #pragma mark - TKCalendarDayViewDataSource

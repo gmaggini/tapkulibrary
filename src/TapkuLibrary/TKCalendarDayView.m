@@ -152,7 +152,11 @@
 	
 	UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressOnScrollView:)];
 	[self.horizontalScrollView addGestureRecognizer:longPressRecognizer];
-	
+    UITapGestureRecognizer *doubleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapOnScrollView:)];
+    doubleTapRecognizer.numberOfTapsRequired = 2;
+    [self.horizontalScrollView addGestureRecognizer:longPressRecognizer];
+    [self.horizontalScrollView addGestureRecognizer:doubleTapRecognizer];
+    
 	info.day -= 1;
 	
 	for(NSInteger i=0;i<3;i++){
@@ -247,21 +251,34 @@
 - (void) longPressOnScrollView:(UILongPressGestureRecognizer*)sender
 {
 	if (sender.state == UIGestureRecognizerStateBegan) {
-		TKTimelineView *view = [self _timelineAtIndex:1];
-		CGPoint tappedPoint = [sender locationInView:self.pages[1]];
-		NSInteger hourStart = (tappedPoint.y - VERTICAL_INSET)/(VERTICAL_DIFF);
-		CGFloat hourStartPosition = hourStart * VERTICAL_DIFF + VERTICAL_INSET;
-		NSInteger minuteStart = ((tappedPoint.y -hourStartPosition) * 60.0)/VERTICAL_DIFF;
-		minuteStart = round(minuteStart/5) * 5;
-		NSDateComponents *comps = [view.date dateComponentsWithTimeZone:self.calendar.timeZone];
-		[comps setHour:hourStart];
-		[comps setMinute:minuteStart];
-		NSDate *eventDate = [NSDate dateWithDateComponents:comps];
+        NSDate *eventDate = [self dateForGestureRecognizer:sender];
 		if(self.delegate && [self.delegate respondsToSelector:@selector(calendarDayTimelineView:didReceiveLongPressAtDate:)])
 			[self.delegate calendarDayTimelineView:self didReceiveLongPressAtDate:eventDate];
 	}
 }
 
+- (void) doubleTapOnScrollView:(UILongPressGestureRecognizer*)sender
+{
+    if (sender.state == UIGestureRecognizerStateRecognized) {
+        NSDate *eventDate = [self dateForGestureRecognizer:sender];
+        if(self.delegate && [self.delegate respondsToSelector:@selector(calendarDayTimelineView:didReceiveDoubleTapAtDate:)])
+            [self.delegate calendarDayTimelineView:self didReceiveDoubleTapAtDate:eventDate];
+    }
+}
+
+- (NSDate*)dateForGestureRecognizer:(UIGestureRecognizer*)recognizer {
+    TKTimelineView *view = [self _timelineAtIndex:1];
+    CGPoint tappedPoint = [recognizer locationInView:self.pages[1]];
+    NSInteger hourStart = (tappedPoint.y - VERTICAL_INSET)/(VERTICAL_DIFF);
+    CGFloat hourStartPosition = hourStart * VERTICAL_DIFF + VERTICAL_INSET;
+    NSInteger minuteStart = ((tappedPoint.y -hourStartPosition) * 60.0)/VERTICAL_DIFF;
+    minuteStart = round(minuteStart/5) * 5;
+    NSDateComponents *comps = [view.date dateComponentsWithTimeZone:self.calendar.timeZone];
+    [comps setHour:hourStart];
+    [comps setMinute:minuteStart];
+    NSDate *eventDate = [NSDate dateWithDateComponents:comps];
+    return eventDate;
+}
 
 #pragma mark UIView Subclasses
 - (void) didMoveToWindow{
